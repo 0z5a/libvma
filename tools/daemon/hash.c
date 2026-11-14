@@ -133,11 +133,12 @@ void *hash_enum(hash_t ht, size_t index)
 
 void *hash_put(hash_t ht, hash_key_t key, void *value)
 {
-	if (ht && (ht->count < ht->size)) {
+	if (ht) {
 		struct hash_element *entry = NULL;
 
 		entry = hash_find(ht, key, 0);
-		if (NULL == entry) {
+		/* Only a new key needs a free element */
+		if ((NULL == entry) && (ht->count < ht->size)) {
 			entry = hash_find(ht, key, 1);
 		}
 		if (entry) {

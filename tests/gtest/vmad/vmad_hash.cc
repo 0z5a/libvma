@@ -207,3 +207,38 @@ TEST_F(vmad_hash, ti_9) {
 
 	hash_destroy(ht);
 }
+
+TEST_F(vmad_hash, ti_10) {
+	hash_t ht;
+	struct element element[] = {{12345, 1}, {1234, 2}, {12, 3}};
+	struct element update = {1234, 4};
+	struct element extra = {77, 5};
+	struct element *e;
+	size_t i;
+
+	ht = hash_create(NULL, 3);
+	ASSERT_TRUE(ht);
+	ASSERT_EQ(3, hash_size(ht));
+
+	for (i = 0; i < ARRAY_SIZE(element); i++) {
+		EXPECT_TRUE(hash_put(ht, element[i].key, &element[i]));
+	}
+	EXPECT_EQ(3, hash_count(ht));
+
+	/* Update of existing key should succeed when hash is full */
+	e = (struct element *)hash_put(ht, update.key, &update);
+	ASSERT_TRUE(e);
+	EXPECT_EQ(((uintptr_t)&update), ((uintptr_t)e));
+	EXPECT_EQ(3, hash_count(ht));
+
+	e = (struct element *)hash_get(ht, update.key);
+	ASSERT_TRUE(e);
+	EXPECT_EQ(((uintptr_t)&update), ((uintptr_t)e));
+	EXPECT_EQ(4, e->value);
+
+	/* New key still can not be added */
+	EXPECT_FALSE(hash_put(ht, extra.key, &extra));
+	EXPECT_EQ(3, hash_count(ht));
+
+	hash_destroy(ht);
+}
